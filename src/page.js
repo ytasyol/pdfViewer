@@ -1,49 +1,49 @@
 
 export default class Page {
     constructor(page, footprint, container, insertTop) {
-        this.page = page;
-        this.pdfFootprint = footprint;
-        this.height = 0;
-        this.canvas = document.createElement('canvas');
+        this._page = page;
+        this._pdfFootprint = footprint;
+        this._height = 0;
+        this._canvas = document.createElement('canvas');
         if(insertTop) {
-            container.insertBefore(this.canvas, container.childNodes[0]);
+            container.insertBefore(this._canvas, container.childNodes[0]);
         } else {
-            container.appendChild(this.canvas);
+            container.appendChild(this._canvas);
         }
     }
 
     get pageHeight() {
-        return this.height;
+        return this._height;
     }
 
     get footprint() {
-        return this.pdfFootprint;
+        return this._pdfFootprint;
     }
 
     get pageNumber() {
-        return this.page.pageIndex + 1;
+        return this._page.pageIndex + 1;
     }
 
     render(width, height) {     
-        var context = this.canvas.getContext('2d');
+        var context = this._canvas.getContext('2d');
 
-        var viewport = this.page.getViewport(1);
+        var viewport = this._page.getViewport(1);
         var scale = (width - 22) / viewport.width;
-        var scaledViewport = this.page.getViewport(scale);
+        var scaledViewport = this._page.getViewport(scale);
 
         this.height = scaledViewport.height;
-        this.canvas.height = scaledViewport.height;
-        this.canvas.width = scaledViewport.width;
+        this._canvas.height = scaledViewport.height;
+        this._canvas.width = scaledViewport.width;
 
         var renderContext = {
         canvasContext: context,
         viewport: scaledViewport
         };
-        return this.page.render(renderContext);
+        return this._page.render(renderContext);
     }
 
     destroy() {
-        this.page.cleanup();
-        this.canvas.remove();
+        this._page.cleanup();
+        this._canvas.remove();
     }
 }

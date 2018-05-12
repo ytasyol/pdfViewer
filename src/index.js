@@ -2,7 +2,7 @@
 import Viewer from './viewer';
 
 (function(ns) {
-    const viewer = new Viewer('default', document.getElementById('container'), 400, 600);
+    let viewer = new Viewer('default', document.getElementById('container'), 400, 600);
     viewer.pdf = {
         title: 'Title',
         url: 'compressed.tracemonkey-pldi-09.pdf'
@@ -21,4 +21,21 @@ import Viewer from './viewer';
             url: 'compressed.tracemonkey-pldi-09.pdf'
         });
     }
+
+    document.getElementById("resetBtn").addEventListener("click", function(){
+        viewer.pdf = {
+            title: 'Title',
+            url: 'compressed.tracemonkey-pldi-09.pdf'
+        };
+    });
+    document.getElementById("removeBtn").addEventListener("click", function(){
+        viewer.destroy();
+    });
+    document.getElementById("createBtn").addEventListener("click", function(){
+        viewer = new Viewer('default', document.getElementById('container'), 400, 600);
+        viewer.pdf = {
+            title: 'Title',
+            url: 'compressed.tracemonkey-pldi-09.pdf'
+        };
+    });
 })();
