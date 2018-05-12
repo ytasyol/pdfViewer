@@ -31,68 +31,84 @@ const CancelablePromise = class CancelablePromise {
 const loadPrev = function () {
   const firstPage = this.renderedPages[0];
   const pdf = this.pdfs.find((p) => p.footprint === firstPage.footprint);
-  if (firstPage && pdf) {
+  if (firstPage && pdf && !this.isLoading) {
+    this.isLoading = true;
     if (firstPage.pageNumber > 1) {
       pdf.getPage(firstPage.pageNumber - 1)
         .then((page) => {
-          const p = new Page(page, document.getElementById(this.pagesContainerId), pdf.footprint);
+          const p = new Page(page, pdf.footprint, document.getElementById(this.pagesContainerId), true);
           p.render(this.width, this.height);
           this.renderedPages.unshift(p);
-          const removedPage = this.renderedPages.pop();
-          removedPage.destroy();
+          // const removedPage = this.renderedPages.pop();
+          // removedPage.destroy();
+          this.isLoading = false;
         });
     } else {
-      const loadPdf = new CancelablePromise(pdfjsLib.getDocument(pdf.url));
-      loadPdf.promise
-        .then((pdf) => {
-          this.pdfs.push(pdf);
-          pdf.getPage(pdf.numPages)
-            .then((page) => {
-              const p = new Page(page, document.getElementById(this.pagesContainerId), pdf.footprint);
-              p.render(this.width, this.height);
-              this.renderedPages.unshift(p);
-              const removedPage = this.renderedPages.pop();
-              removedPage.destroy();
+      this.getPrev((prev) => {
+        if (prev) {
+          const loadPdf = new CancelablePromise(pdfjsLib.getDocument(prev.url));
+          loadPdf.promise
+            .then((pdf) => {
+              this.pdfs.push(pdf);
+              pdf.getPage(pdf.numPages)
+                .then((page) => {
+                  const p = new Page(page, pdf.footprint, document.getElementById(this.pagesContainerId), true);
+                  p.render(this.width, this.height);
+                  this.renderedPages.unshift(p);
+                  // const removedPage = this.renderedPages.pop();
+                  // removedPage.destroy();
+                  this.isLoading = false;
+                });
             });
-        });
+        } else {
+          //nothing more
+        }
+      });
     }
   } else {
-    //TODO
+    //error no pdf / lastPage
   }
 }
 
 const loadNext = function () {
   const lastPage = this.renderedPages[this.renderedPages.length - 1];
   const pdf = this.pdfs.find((p) => p.footprint === lastPage.footprint);
-  if (lastPage && pdf) {
+  if (lastPage && pdf && !this.isLoading) {
+    this.isLoading = true;
     if (lastPage.pageNumber < pdf.numPages) {
       pdf.getPage(lastPage.pageNumber + 1)
         .then((page) => {
-          const p = new Page(page, document.getElementById(this.pagesContainerId), pdf.footprint);
+          const p = new Page(page, pdf.footprint, document.getElementById(this.pagesContainerId));
           p.render(this.width, this.height);
           this.renderedPages.push(p);
           // const removedPage = this.renderedPages.shift();
           // removedPage.destroy();
+          this.isLoading = false;
         });
     } else {
       this.getNext((data) => {
         const loadPdf = new CancelablePromise(pdfjsLib.getDocument(data.url));
         loadPdf.promise
           .then((pdf) => {
-            this.pdfs.push(pdf);
-            pdf.getPage(1)
-              .then((page) => {
-                const p = new Page(page, document.getElementById(this.pagesContainerId), pdf.footprint);
-                p.render(this.width, this.height);
-                this.renderedPages.unshift(p);
-                const removedPage = this.renderedPages.pop();
-                removedPage.destroy();
-              });
+            if (pdf) {
+              this.pdfs.push(pdf);
+              pdf.getPage(1)
+                .then((page) => {
+                  const p = new Page(page, pdf.footprint, document.getElementById(this.pagesContainerId));
+                  p.render(this.width, this.height);
+                  this.renderedPages.push(p);
+                  // const removedPage = this.renderedPages.shift();
+                  // removedPage.destroy();
+                  this.isLoading = false;
+                });
+            } else {
+              //nothing more
+            }
           });
       });
     }
   } else {
-    //TODO
+    //error no pdf / lastPage
   }
 }
 
@@ -113,7 +129,7 @@ const setScrollHandling = function (trapElement) {
 
     if (scrollTop <= this.loadOffset && this.lastScrollTop > scrollTop) {
       console.log("Get Prev");
-      //loadPrev.bind(this)();
+      loadPrev.bind(this)();
     }
 
     if (scrollBottom >= (scrollHeight - this.loadOffset) && this.lastScrollTop < scrollTop) {
@@ -167,7 +183,7 @@ export default class Viewer {
         for (let i = 1; i < pdf.numPages && i <= 2; i++) {
           pdf.getPage(i)
             .then((page) => {
-              const p = new Page(page, document.getElementById(this.pagesContainerId), pdf.footprint);
+              const p = new Page(page, pdf.footprint, document.getElementById(this.pagesContainerId));
               const renderTask = p.render(this.width, this.height);
               if (p.pageNumber === 1) {
                 renderTask

@@ -1,11 +1,15 @@
 
 export default class Page {
-    constructor(page, pagesContainer, footprint) {
+    constructor(page, footprint, container, insertTop) {
         this.page = page;
         this.pdfFootprint = footprint;
         this.height = 0;
         this.canvas = document.createElement('canvas');
-        pagesContainer.appendChild(this.canvas);
+        if(insertTop) {
+            container.insertBefore(this.canvas, container.childNodes[0]);
+        } else {
+            container.appendChild(this.canvas);
+        }
     }
 
     get pageHeight() {
