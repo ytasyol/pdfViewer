@@ -159,20 +159,25 @@ const resetViewer = function () {
     pdf.cleanup();
   }
   this.pdfs = [];
+  document.getElementById(this._loadingNextId).style.display = 'none';
+  document.getElementById(this._loadingPrevId).style.display = 'none';
 }
 
 const createPdfViewer = function () {
   this._parentElement.innerHTML = `
         <div id="${this._viewerContainerId}" class="pdfContainer" style="width: ${this._width}px; height: ${this._height};">
-            <div id="${this._viewerId}" class="pdfViewer" style="width: ${this._width + 16}px; height: ${this._height};">
-              <div id="${this._loadingPrevId}" class="loadingPrev" style="display: none;">
-                <img src="${loadingGif}"/>
-              </div>  
-              <div id="${this._pagesContainerId}"></div>
-              <div id="${this._loadingNextId}" class="loadingNext" style="display: none;">
-                <img src="${loadingGif}"/>
-              </div>  
-            <div>
+          <div id="${this._loadingOverlayId}" class="loadingOverlay" style="display: none;">
+            <img src="${loadingGif}"/>
+          </div>  
+          <div id="${this._viewerId}" class="pdfViewer" style="width: ${this._width + 16}px; height: ${this._height};">
+            <div id="${this._loadingPrevId}" class="loadingPrev" style="display: none;">
+              <img src="${loadingGif}"/>
+            </div>  
+            <div id="${this._pagesContainerId}"></div>
+            <div id="${this._loadingNextId}" class="loadingNext" style="display: none;">
+              <img src="${loadingGif}"/>
+            </div>  
+          <div>
         </div>`;
 }
 
@@ -188,6 +193,7 @@ export default class Viewer {
     this._pagesContainerId = `pages_container_${this._id}`;
     this._loadingPrevId = `loading_prev_${this._id}`;
     this._loadingNextId = `loading_next_${this._id}`;
+    this._loadingOverlayId = `loading_${this._id}`;
     this._trapToken = undefined;
     this._lastScrollTop = 0;
     this._loadOffset = 0;

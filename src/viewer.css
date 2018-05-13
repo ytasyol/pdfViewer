@@ -1,6 +1,7 @@
 .pdfContainer {
     border: 1px solid lightgrey;
     overflow: hidden;
+    position: relative;
 }
 
 .pdfContainer:hover {
@@ -44,4 +45,19 @@
     margin: 0 auto;
     display: block;
     margin-bottom: 5px;
+}
+
+.pdfContainer .loadingOverlay {
+    position: absolute;
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    margin: 10px;
+    z-index: 1;
+    background-color: white;
+    border: 1px solid lightgrey;
+}
+
+.loadingOverlay img {
+    margin: 75% auto;
+    display: block;
 }
