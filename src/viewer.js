@@ -85,7 +85,7 @@ const loadNext = function () {
           p.render(this._width, this._height);
           this._renderedPages.push(p);
           if (this._renderedPages.length > this.maxPagesCount) {
-            const removedPage = this.renderedPages.shift();
+            const removedPage = this._renderedPages.shift();
             removedPage.destroy();
           }
           this._isLoading = false;
@@ -104,7 +104,7 @@ const loadNext = function () {
                   p.render(this.width, this.height);
                   this._renderedPages.push(p);
                   if (this._renderedPages.length > this.maxPagesCount) {
-                    const removedPage = this.renderedPages.shift();
+                    const removedPage = this._renderedPages.shift();
                     removedPage.destroy();
                   }
                   this._isLoading = false;
