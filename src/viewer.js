@@ -2,7 +2,7 @@ import scrolltrap from 'scrolltrap';
 import Page from './page';
 import CancelablePromise from './cancelablePromise';
 import loadingGif from './loader.gif';
-//TODO cleanup pdfs, promise handling
+//TODO cleanup pdfs, promise handling, statusbar update
 require('./viewer.css');
 
 const loadPrevPages = function(pdf, index, count, tempContainer) {

@@ -1,13 +1,15 @@
 {
   "name": "pdfviewer",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Simple PDF Viewer Code Samples",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Yuecel Tasyol",
+    "url": "https://github.com/ytasyol"
+  },
+  "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.21.0",
