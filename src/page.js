@@ -34,7 +34,7 @@ export default class Page {
         var scale = (width - 22) / viewport.width;
         var scaledViewport = this._page.getViewport(scale);
 
-        this.height = scaledViewport.height;
+        this._height = scaledViewport.height;
         this._canvas.height = scaledViewport.height;
         this._canvas.width = scaledViewport.width;
 

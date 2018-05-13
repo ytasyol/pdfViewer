@@ -214,7 +214,7 @@ export default class Viewer {
     this._hasPrev = true;
     this._loadTask = undefined;
 
-    this.scrollOffsetPages = 0;
+    this.loadingOffsetPages = 1;
     this.maxPagesCount = 15;
     this.preLoadPagesCount = 5;
     this.loadPagesCount = 5;
@@ -243,7 +243,7 @@ export default class Viewer {
               if (p.pageNumber === 1) {
                 renderTask
                   .then(() => {
-                    this._loadOffset = p.pageHeight * this.scrollOffsetPages;
+                    this._loadOffset = p.pageHeight * this.loadingOffsetPages;
                     document.getElementById(this._loadingOverlayId).style.display = 'none';
                   });
               }
@@ -266,7 +266,7 @@ export default class Viewer {
       page.render(width, height);
     }
     if (this._renderedPages.length) {
-      this._loadOffset = this._renderedPages[0].pageHeight * this.scrollOffsetPages;
+      this._loadOffset = this._renderedPages[0].pageHeight * this.loadingOffsetPages;
     }
   }
 
