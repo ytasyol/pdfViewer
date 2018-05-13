@@ -56,21 +56,36 @@ const loadPrev = function () {
   }
 }
 
-// const loadNextPages = function (pdf, startIndex) {
-//   for(let i = startIndex, c = 0; i < pdf.numPages && c < this.loadPagesCount; i++, c++) {
-//     pdf.getPage(startIndex)
-//         .then((page) => {
-//           const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
-//           p.render(this._width, this._height);
-//           this.renderedPages.push(p);
-//           if (this._renderedPages.length > this.maxPagesCount) {
-//             const removedPage = this.renderedPages.shift();
-//             removedPage.destroy();
-//           }
-//           //this._isLoading = false;
-//         });
-//   }
-// }
+const loadNextPages = function(pdf, startIndex) {
+  let ready = 0;
+  let count = 0;
+  const loadFinished = () => {
+    if (++ready >= count) {
+      document.getElementById(this._loadingNextId).style.display = 'none';
+      this._isLoading = false;
+    }
+  };
+
+  for(let i = startIndex, c = 0; c < this.loadPagesCount && i <= pdf.numPages; i++, c++) {
+    pdf.getPage(i)
+      .then((page) => {
+        count++;
+        const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
+        const renderTask = p.render(this._width, this._height);
+        renderTask
+          .then(loadFinished)
+          .catch(loadFinished);
+        this._renderedPages.push(p);
+        if (this._renderedPages.length > this.maxPagesCount) {
+          const removedPage = this._renderedPages.shift();
+          removedPage.destroy();
+        }
+      })
+      .catch((error) => {
+        //could not get page, action?!
+      });
+  }
+}
 
 const loadNext = function () {
   const lastPage = this._renderedPages[this._renderedPages.length - 1];
@@ -79,18 +94,7 @@ const loadNext = function () {
     this._isLoading = true;
     document.getElementById(this._loadingNextId).style.display = 'block';
     if (lastPage.pageNumber < pdf.numPages) {
-      pdf.getPage(lastPage.pageNumber + 1)
-        .then((page) => {
-          const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
-          p.render(this._width, this._height);
-          this._renderedPages.push(p);
-          if (this._renderedPages.length > this.maxPagesCount) {
-            const removedPage = this._renderedPages.shift();
-            removedPage.destroy();
-          }
-          this._isLoading = false;
-          document.getElementById(this._loadingNextId).style.display = 'none';
-        });
+      loadNextPages.bind(this)(pdf, lastPage.pageNumber + 1);
     } else {
       this.getNext((data) => {
         const loadPdf = new CancelablePromise(pdfjsLib.getDocument(data.url));
@@ -98,18 +102,7 @@ const loadNext = function () {
           .then((pdf) => {
             if (pdf) {
               this._pdfs.push(pdf);
-              pdf.getPage(1)
-                .then((page) => {
-                  const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
-                  p.render(this.width, this.height);
-                  this._renderedPages.push(p);
-                  if (this._renderedPages.length > this.maxPagesCount) {
-                    const removedPage = this._renderedPages.shift();
-                    removedPage.destroy();
-                  }
-                  this._isLoading = false;
-                  document.getElementById(this._loadingNextId).style.display = 'none';
-                });
+              loadNextPages.bind(this)(pdf, 1);
             } else {
               this._hasNext = false;
               this._isLoading = false;
@@ -135,7 +128,7 @@ const setScrollHandling = function (trapElement) {
 
   trapElement.addEventListener('wheel', (e) => {
     const target = arguments[0];
-    const delta = e.deltaY; // >0 => scroll down
+    const delta = e.deltaY;
     const scrollTop = target.scrollTop;
     const scrollHeight = target.scrollHeight;
     const scrollBottom = target.offsetHeight + scrollTop;
@@ -220,11 +213,12 @@ export default class Viewer {
     if (this._loadTask) {
       this._loadTask.cancel();
     }
+    document.getElementById(this._loadingOverlayId).style.display = 'block';
     this._loadTask = new CancelablePromise(pdfjsLib.getDocument(pdf.url));
     this._loadTask.promise
       .then((pdf) => {
         this._pdfs = [pdf];
-        for (let i = 1; i < pdf.numPages && i <= this.preLoadPagesCount; i++) {
+        for (let i = 1; i <= pdf.numPages && i <= this.preLoadPagesCount; i++) {
           pdf.getPage(i)
             .then((page) => {
               const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
@@ -233,6 +227,7 @@ export default class Viewer {
                 renderTask
                   .then(() => {
                     this._loadOffset = p.pageHeight * this.scrollOffsetPages;
+                    document.getElementById(this._loadingOverlayId).style.display = 'none';
                   });
               }
               this._renderedPages.push(p);
@@ -241,6 +236,7 @@ export default class Viewer {
         }
       }).catch((error) => {
         if (error !== CancelablePromise.CANCELED) {
+          document.getElementById(this._loadingOverlayId).style.display = 'none';
           console.error(error);
         }
       });
