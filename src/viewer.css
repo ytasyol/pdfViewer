@@ -18,6 +18,15 @@
     border: 1px solid lightgrey;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
+
+.pdfViewer .errorPage {
+    margin: 10px;
+    border: 1px solid lightgrey;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    width: calc(100% - 48px); /* margin + border + padding + 16px(hidding scrollbar) */
+    padding: 5px;
+}
+
 .pdfViewer .loadingPrev {
     margin: 10;
     border: 1px solid lightgrey;
@@ -55,6 +64,7 @@
     z-index: 1;
     background-color: white;
     border: 1px solid lightgrey;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .loadingOverlay img {

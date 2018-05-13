@@ -5,6 +5,9 @@ export default class Page {
         this._pdfFootprint = footprint;
         this._height = 0;
         this._canvas = document.createElement('canvas');
+        this._canvas.style.display = 'none';
+        this._renderTask = undefined;
+        this._errorPage = undefined;
         if(insertTop) {
             container.insertBefore(this._canvas, container.childNodes[0]);
         } else {
@@ -39,11 +42,23 @@ export default class Page {
         canvasContext: context,
         viewport: scaledViewport
         };
-        return this._page.render(renderContext);
+        this._renderTask = this._page.render(renderContext);
+        this._renderTask
+            .then(() => {
+                this._canvas.style.display = 'block';
+            })
+            .catch((error) => {
+                this._errorPage = document.createElement('div');
+                this._errorPage.classList.add('errorPage');
+                this._errorPage.textContent = `Page ${ this.pageNumber } Error: ${error}`;
+                this._canvas.parentNode.replaceChild(this._errorPage, this._canvas);
+            });
+        return this._renderTask;
     }
 
     destroy() {
         this._page.cleanup();
-        this._canvas.remove();
+        if(this._canvas) this._canvas.remove();
+        if(this._errorPage) this._errorPage.remove();
     }
 }
