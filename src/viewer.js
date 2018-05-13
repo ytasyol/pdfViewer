@@ -44,19 +44,19 @@ const loadPrevPages = function(pdf, index, count, tempContainer) {
 
 const loadPrev = function () {
   const firstPage = this._renderedPages[0];
-  const pdf = this._pdfs.find((p) => p.footprint === firstPage.footprint);
-  if (firstPage && pdf && !this._isLoading && this._hasPrev) {
+  const pdfContaier = this._pdfs.find((p) => p.footprint === firstPage.footprint);
+  if (firstPage && pdfContaier && !this._isLoading && this._hasPrev) {
     this._isLoading = true;
     document.getElementById(this._loadingPrevId).style.display = 'block';
     if (firstPage.pageNumber > 1) {
-      loadPrevPages.bind(this)(pdf, firstPage.pageNumber - 1);
+      loadPrevPages.bind(this)(pdfContaier.file, firstPage.pageNumber - 1);
     } else {
-      this.getPrev((prev) => {
-        if (prev) {
-          const loadPdf = new CancelablePromise(pdfjsLib.getDocument(prev.url));
+      this.getPrev((pdfInfo) => {
+        if (pdfInfo) {
+          const loadPdf = new CancelablePromise(pdfjsLib.getDocument(pdfInfo.url));
           loadPdf.promise
             .then((pdf) => {
-              this._pdfs.push(pdf);
+              this._pdfs.push(new PdfContainer(pdfInfo.title, pdfInfo.url, pdf));
               loadPrevPages.bind(this)(pdf, pdf.numPages);
             });
         } else {
@@ -106,19 +106,19 @@ const loadNextPages = function(pdf, index, count, tempContainer) {
 
 const loadNext = function () {
   const lastPage = this._renderedPages[this._renderedPages.length - 1];
-  const pdf = this._pdfs.find((p) => p.footprint === lastPage.footprint);
-  if (lastPage && pdf && !this._isLoading && this._hasNext) {
+  const pdfContaier = this._pdfs.find((p) => p.footprint === lastPage.footprint);
+  if (lastPage && pdfContaier && !this._isLoading && this._hasNext) {
     this._isLoading = true;
     document.getElementById(this._loadingNextId).style.display = 'block';
-    if (lastPage.pageNumber < pdf.numPages) {
-      loadNextPages.bind(this)(pdf, lastPage.pageNumber + 1);
+    if (lastPage.pageNumber < pdfContaier.numPages) {
+      loadNextPages.bind(this)(pdfContaier.file, lastPage.pageNumber + 1);
     } else {
-      this.getNext((data) => {
-        const loadPdf = new CancelablePromise(pdfjsLib.getDocument(data.url));
+      this.getNext((pdfInfo) => {
+        const loadPdf = new CancelablePromise(pdfjsLib.getDocument(pdfInfo.url));
         loadPdf.promise
           .then((pdf) => {
             if (pdf) {
-              this._pdfs.push(pdf);
+              this._pdfs.push(new PdfContainer(pdfInfo.title, pdfInfo.url, pdf));
               loadNextPages.bind(this)(pdf, 1);
             } else {
               this._hasNext = false;
@@ -160,13 +160,26 @@ const setScrollHandling = function (trapElement) {
   });
 }
 
+const renderStatusBarChanges = function (pdf, pageNumber) {
+  if (this.showStatusBar) {
+    const titleElement = document.querySelector(`#${this._viewerStatusBarId} .title`);
+    const pagesElement = document.querySelector(`#${this._viewerStatusBarId} .pages`);
+    if(titleElement) {
+      titleElement.textContent = pdf.title;
+    }
+    if(pagesElement) {
+      pagesElement.textContent = `${pageNumber} of ${pdf.file.numPages}`;
+    }
+  }
+}
+
 const resetViewer = function () {
   for (const page of this._renderedPages) {
     page.destroy();
   }
   this.renderedPages = [];
   for (const pdf of this._pdfs) {
-    pdf.cleanup();
+    pdf.file.cleanup();
   }
   this.pdfs = [];
   document.getElementById(this._loadingNextId).style.display = 'none';
@@ -187,8 +200,27 @@ const createPdfViewer = function () {
             <div id="${this._loadingNextId}" class="loadingNext" style="display: none;">
               <img src="${loadingGif}"/>
             </div>  
-          <div>
+          </div>
+          <div id="${this._viewerStatusBarId}" class="statusBar">
+            <span class="title"></span><span class="pages"></span>
+          </div>
         </div>`;
+}
+
+class PdfContainer {
+  constructor(title, url, file) {
+    this.title = title;
+    this.url = url;
+    this.file = file;
+  }
+
+  get footprint() {
+    return this.file.footprint;
+  }
+
+  get numPages() {
+    return this.file.numPages;
+  }
 }
 
 export default class Viewer {
@@ -204,6 +236,7 @@ export default class Viewer {
     this._loadingPrevId = `loading_prev_${this._id}`;
     this._loadingNextId = `loading_next_${this._id}`;
     this._loadingOverlayId = `loading_${this._id}`;
+    this._viewerStatusBarId = `viewer_statusbar_${this._id}`;
     this._trapToken = undefined;
     this._lastScrollTop = 0;
     this._loadOffset = 0;
@@ -218,6 +251,7 @@ export default class Viewer {
     this.maxPagesCount = 15;
     this.preLoadPagesCount = 5;
     this.loadPagesCount = 5;
+    this.showStatusBar = true;
     this.getPrev = () => undefined;
     this.getNext = () => undefined;
 
@@ -225,16 +259,16 @@ export default class Viewer {
     setScrollHandling.bind(this)(document.getElementById(this._viewerId));
   }
 
-  set pdf(pdf) {
+  set pdf(pdfInfo) {
     resetViewer.bind(this)();
     if (this._loadTask) {
       this._loadTask.cancel();
     }
     document.getElementById(this._loadingOverlayId).style.display = 'block';
-    this._loadTask = new CancelablePromise(pdfjsLib.getDocument(pdf.url));
+    this._loadTask = new CancelablePromise(pdfjsLib.getDocument(pdfInfo.url));
     this._loadTask.promise
       .then((pdf) => {
-        this._pdfs = [pdf];
+        this._pdfs = [new PdfContainer(pdfInfo.title, pdfInfo.url, pdf)];
         for (let i = 1; i <= pdf.numPages && i <= this.preLoadPagesCount; i++) {
           pdf.getPage(i)
             .then((page) => {
@@ -245,6 +279,7 @@ export default class Viewer {
                   .then(() => {
                     this._loadOffset = p.pageHeight * this.loadingOffsetPages;
                     document.getElementById(this._loadingOverlayId).style.display = 'none';
+                    renderStatusBarChanges.bind(this)(this._pdfs[0] ,1);
                   });
               }
               this._renderedPages.push(p);
@@ -257,6 +292,10 @@ export default class Viewer {
           console.error(error);
         }
       });
+  }
+
+  toggleStatusBar() {
+    
   }
 
   resize(width, height) {

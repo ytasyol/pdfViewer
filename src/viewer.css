@@ -5,7 +5,7 @@
 }
 
 .pdfContainer:hover {
-    border-color: green;
+    border-color: grey;
 }
 
 .pdfViewer {
@@ -70,4 +70,19 @@
 .loadingOverlay img {
     margin: 75% auto;
     display: block;
+}
+
+.pdfContainer .statusBar {
+    position: absolute;
+    bottom: 0;
+    width: calc(100% - 10px);
+    background-color: grey;
+    color: white;
+    padding: 5px;
+    height: 1em;
+    z-index: 2;
+}
+
+.statusBar .pages {
+    float: right;
 }
