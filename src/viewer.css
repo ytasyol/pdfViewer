@@ -1,0 +1,47 @@
+.pdfContainer {
+    border: 1px solid lightgrey;
+    overflow: hidden;
+}
+
+.pdfContainer:hover {
+    border-color: green;
+}
+
+.pdfViewer {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.pdfViewer canvas {
+    margin: 10;
+    border: 1px solid lightgrey;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+.pdfViewer .loadingPrev {
+    margin: 10;
+    border: 1px solid lightgrey;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    margin-top: -15px;
+    padding: 15px;
+    padding-bottom: 10px;
+}
+
+.loadingPrev img {
+    margin: 0 auto;
+    display: block;
+    margin-top: 5px;
+}
+
+.pdfViewer .loadingNext {
+    margin: 10px;
+    border: 1px solid lightgrey;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    margin-bottom: -15px;
+    padding-top: 10px;
+}
+
+.loadingNext img {
+    margin: 0 auto;
+    display: block;
+    margin-bottom: 5px;
+}
