@@ -1,8 +1,8 @@
 
 export default class Page {
-    constructor(page, footprint, container, insertTop) {
+    constructor(page, fingerprint, container, insertTop) {
         this._page = page;
-        this._pdfFootprint = footprint;
+        this._pdfFingerprint = fingerprint;
         this._height = 0;
         this._canvas = document.createElement('canvas');
         this._canvas.style.display = 'none';
@@ -19,8 +19,8 @@ export default class Page {
         return this._height;
     }
 
-    get footprint() {
-        return this._pdfFootprint;
+    get fingerprint() {
+        return this._pdfFingerprint;
     }
 
     get pageNumber() {

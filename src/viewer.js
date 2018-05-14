@@ -14,7 +14,7 @@ const loadPrevPages = function(pdf, index, count, tempContainer) {
   if ((isNaN(count) || count < this.loadPagesCount) && index > 0) {
     pdf.getPage(index)
       .then((page) => {
-        const p = new Page(page, pdf.footprint, fragment, true);
+        const p = new Page(page, pdf.fingerprint, fragment, true);
         const renderTask = p.render(this._width, this._height);
         renderTask
           .then(loadFinished)
@@ -44,7 +44,7 @@ const loadPrevPages = function(pdf, index, count, tempContainer) {
 
 const loadPrev = function () {
   const firstPage = this._renderedPages[0];
-  const pdfContaier = this._pdfs.find((p) => p.footprint === firstPage.footprint);
+  const pdfContaier = this._pdfs.find((p) => p.fingerprint === firstPage.fingerprint);
   if (firstPage && pdfContaier && !this._isLoading && this._hasPrev) {
     this._isLoading = true;
     document.getElementById(this._loadingPrevId).style.display = 'block';
@@ -81,7 +81,7 @@ const loadNextPages = function(pdf, index, count, tempContainer) {
     pdf.getPage(index)
       .then((page) => {
         count++;
-        const p = new Page(page, pdf.footprint, fragment);
+        const p = new Page(page, pdf.fingerprint, fragment);
         const renderTask = p.render(this._width, this._height);
         renderTask
           .then(loadFinished)
@@ -106,7 +106,7 @@ const loadNextPages = function(pdf, index, count, tempContainer) {
 
 const loadNext = function () {
   const lastPage = this._renderedPages[this._renderedPages.length - 1];
-  const pdfContaier = this._pdfs.find((p) => p.footprint === lastPage.footprint);
+  const pdfContaier = this._pdfs.find((p) => p.fingerprint === lastPage.fingerprint);
   if (lastPage && pdfContaier && !this._isLoading && this._hasNext) {
     this._isLoading = true;
     document.getElementById(this._loadingNextId).style.display = 'block';
@@ -214,8 +214,8 @@ class PdfContainer {
     this.file = file;
   }
 
-  get footprint() {
-    return this.file.footprint;
+  get fingerprint() {
+    return this.file.fingerprint;
   }
 
   get numPages() {
@@ -272,7 +272,7 @@ export default class Viewer {
         for (let i = 1; i <= pdf.numPages && i <= this.preLoadPagesCount; i++) {
           pdf.getPage(i)
             .then((page) => {
-              const p = new Page(page, pdf.footprint, document.getElementById(this._pagesContainerId));
+              const p = new Page(page, pdf.fingerprint, document.getElementById(this._pagesContainerId));
               const renderTask = p.render(this._width, this._height);
               if (p.pageNumber === 1) {
                 renderTask
